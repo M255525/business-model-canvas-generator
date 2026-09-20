@@ -1,0 +1,16 @@
+{
+  "name": "商業模式圖產生器",
+  "short_name": "商業模式圖",
+  "description": "填一次商品資訊，九宮格商業模式圖自動先幫你填好草稿，可直接編輯或請AI優化",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c1410",
+  "theme_color": "#2d6a4f",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

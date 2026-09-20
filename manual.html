@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>操作手冊 - 商業模式圖產生器</title>
+<style>
+  body{font-family:"Segoe UI","Microsoft JhengHei",sans-serif;max-width:800px;margin:0 auto;padding:30px 20px;line-height:1.8;background:#0c1410;color:#e7f3ec;}
+  h1{color:#52b788;}
+  h2{color:#52b788;border-bottom:1px solid #2a4033;padding-bottom:6px;margin-top:36px;}
+  code{background:#1a2b22;padding:2px 6px;border-radius:4px;}
+  .warn{background:rgba(82,183,136,.14);border-left:4px solid #52b788;padding:10px 14px;border-radius:6px;}
+  a{color:#52b788;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;}
+  th,td{padding:8px 10px;border-bottom:1px solid #2a4033;text-align:left;font-size:14px;}
+</style>
+</head>
+<body>
+<h1>商業模式圖產生器 — 操作手冊</h1>
+
+<h2>這是做什麼的？</h2>
+<p>商業模式圖（Business Model Canvas，Alexander Osterwalder 提出的經典九宮格框架）是一頁式呈現一個商業模式全貌的工具。本工具填一次商品資訊，就能自動先幫你把九宮格填好草稿，之後直接在格子裡點擊就能修改——manual-first 設計，AI 只是幫你加速起點，不是取代思考。</p>
+
+<h2>九宮格的九個欄位</h2>
+<table>
+  <tr><th>欄位</th><th>在問什麼</th></tr>
+  <tr><td>關鍵合作夥伴</td><td>誰是你不可或缺的外部夥伴／供應商？</td></tr>
+  <tr><td>關鍵活動</td><td>要做好這個商業模式，你每天必須做的核心事情是什麼？</td></tr>
+  <tr><td>關鍵資源</td><td>你需要什麼資產、技術或團隊才能運作？</td></tr>
+  <tr><td>價值主張</td><td>你到底幫客戶解決了什麼問題？為什麼是你？</td></tr>
+  <tr><td>顧客關係</td><td>你怎麼跟客戶互動、維持關係？</td></tr>
+  <tr><td>通路</td><td>客戶怎麼知道你、怎麼買到你？</td></tr>
+  <tr><td>客戶群體</td><td>你到底在服務誰？</td></tr>
+  <tr><td>成本結構</td><td>錢主要花在哪裡？</td></tr>
+  <tr><td>收益流</td><td>錢從哪裡來、怎麼賺？</td></tr>
+</table>
+
+<h2>基本流程</h2>
+<ol>
+  <li>填寫產品/服務名稱、產業類別、目標客群、核心痛點（或按下方按鈕載入範例）</li>
+  <li>按「✨ 產生九宮格草稿」，系統會依產業判斷（健康科技/餐飲食品/軟體服務/生活家電/教育內容/一般消費）套用對應模板，同樣的輸入永遠得到同樣的草稿</li>
+  <li>直接點擊任一格內文字即可編輯——這是本工具的核心，草稿只是起點，你的修改才是最終版本</li>
+  <li>對某一格的版本不滿意，按該格右上角「🔄」單獨換一個版本，不影響其他格子</li>
+  <li>想要更貼合實際情況的內容，可以填 API 金鑰後按「🤖 請 AI 生成完整九宮格」（會覆蓋目前內容，請先確認）</li>
+  <li>完成後可複製全部文字、下載 .txt，或直接列印/存成 PDF</li>
+</ol>
+
+<h2>要不要填 API 金鑰？</h2>
+<p>不填完全不影響使用——規則式草稿零金鑰即可產生完整九宮格。金鑰只用於「請 AI 生成完整九宮格」這個選用功能，會依你實際填寫的產業/客群/痛點描述生成更貼合情境的內容。金鑰只存在你瀏覽器的 localStorage，本工具不會經手或保存。</p>
+
+<div class="warn">⚠️ 本工具產出內容僅供商業模式發想參考，不構成投資或經營決策建議；規則式草稿是套版文字，AI 生成內容也可能有誤，請自行查證與修改後才適合正式使用。</div>
+
+<h2>製作者</h2>
+<p>Mark Tsai（蔡豐全）｜<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></p>
+
+</body>
+</html>

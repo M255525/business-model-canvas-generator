@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商業模式圖產生器 · Business Model Canvas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2d6a4f">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="商業模式圖">
+<style>
+:root{
+  --bg:#0c1410; --panel:#131f19; --panel2:#1a2b22; --border:#2a4033;
+  --accent:#52b788; --accent-dark:#40916c; --text:#e7f3ec; --sub:#8fac9c;
+  --ok:#52b788; --warn:#f5a623; --bad:#ff5c5c;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Microsoft JhengHei",sans-serif;}
+
+#marqueeBar{position:fixed;top:0;left:0;right:0;height:30px;background:#000;border-bottom:1px solid var(--border);z-index:2100;overflow:hidden;display:none;align-items:center;}
+#marqueeBar.show{display:flex;}
+#marqueeTrack{display:inline-block;white-space:nowrap;padding-left:100%;font-size:13px;font-weight:600;color:var(--accent);animation:marquee-scroll 30s linear infinite;}
+body.has-marquee{padding-top:30px;}
+body.has-marquee header{top:30px;}
+@keyframes marquee-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+header{background:linear-gradient(90deg,#0f1f17,#1c3a29);padding:20px 24px;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:20;}
+header h1{margin:0;font-size:22px;}
+header h1 span{color:var(--accent);}
+header p{margin:4px 0 0;color:var(--sub);font-size:13px;}
+.toplinks{display:flex;justify-content:flex-end;gap:10px;padding:10px 24px 0;}
+
+.wrap{max-width:1280px;margin:0 auto;padding:24px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;}
+.panel h2{margin:0 0 16px;font-size:16px;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:8px;}
+
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px;}
+input[type=text],textarea,select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;font-size:14px;font-family:inherit;}
+.field-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media (max-width:700px){.field-grid{grid-template-columns:1fr;}}
+
+button{cursor:pointer;border:none;border-radius:6px;font-weight:600;font-size:14px;padding:10px 16px;}
+.btn-primary{background:var(--accent);color:#06150e;}
+.btn-primary:hover{background:var(--accent-dark);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.hint{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6;}
+
+.canvas-title{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.canvas-title h2{margin:0;border:none;padding:0;}
+.category-badge{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--panel2);border:1px solid var(--border);color:var(--sub);}
+
+.canvas{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "partners activities value relationships segments"
+    "partners resources  value channels       segments"
+    "cost     cost       cost  revenue        revenue";
+  gap:10px;
+}
+@media (max-width:900px){
+  .canvas{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "value" "segments" "relationships" "channels"
+      "partners" "activities" "resources" "revenue" "cost";
+  }
+}
+.cell{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;min-height:120px;display:flex;flex-direction:column;position:relative;}
+.cell.value{background:linear-gradient(160deg,#1a2b22,#20362a);border-color:var(--accent);}
+.cell-partners{grid-area:partners;}
+.cell-activities{grid-area:activities;}
+.cell-resources{grid-area:resources;}
+.cell-value{grid-area:value;min-height:250px;}
+.cell-relationships{grid-area:relationships;}
+.cell-channels{grid-area:channels;}
+.cell-segments{grid-area:segments;}
+.cell-cost{grid-area:cost;min-height:80px;}
+.cell-revenue{grid-area:revenue;min-height:80px;}
+.cell-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:8px;}
+.cell-label{font-size:12px;font-weight:700;color:var(--accent);line-height:1.4;}
+.cell-regen{background:none;border:none;color:var(--sub);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0;}
+.cell-regen:hover{color:var(--accent);}
+.cell-content{flex:1;font-size:13px;line-height:1.6;outline:none;white-space:pre-wrap;color:var(--text);}
+.cell-content:empty:before{content:attr(data-placeholder);color:var(--sub);}
+.cell-content:focus{background:rgba(82,183,136,.06);border-radius:6px;}
+
+.output-box{white-space:pre-wrap;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:14px;line-height:1.7;min-height:60px;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;width:400px;max-width:90vw;}
+.warn-box{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:12.5px;color:var(--sub);}
+.warn-box strong{color:var(--text);display:block;margin-bottom:8px;font-size:13px;}
+.warn-box ul{margin:0;padding-left:18px;line-height:1.8;}
+.creator-box{font-size:12.5px;color:var(--sub);text-align:center;}
+.creator-box a{color:var(--sub);}
+.footer-meta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);}
+.footer-link-btn{background:none;border:none;color:var(--sub);cursor:pointer;font-size:12px;font-family:inherit;padding:0;}
+.footer-link-btn:hover{color:var(--accent);}
+footer{max-width:900px;margin:0 auto;padding:20px 20px 60px;display:flex;flex-direction:column;gap:16px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--panel2);border:1px solid var(--accent);color:var(--text);padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:3000;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+@media print{
+  header, .toplinks, .panel:not(#printArea), footer, .toast, #marqueeBar{display:none !important;}
+  body{background:#fff;color:#111;}
+  #printArea{display:block !important;}
+  .cell{border:1px solid #999;background:#fff;}
+  .cell-label{color:#111;}
+}
+#printArea{display:none;}
+</style>
+</head>
+<body>
+
+<div id="marqueeBar"><div id="marqueeTrack"></div></div>
+
+<header>
+  <h1>商業模式圖<span>產生器</span> · Business Model Canvas</h1>
+  <p>填一次商品資訊，九宮格自動先幫你填好草稿，直接在格子裡點擊修改——manual-first 設計，AI 只是加速起點</p>
+</header>
+
+<div class="toplinks">
+  <button class="btn-ghost btn-sm" onclick="window.open('manual.html','_blank')">📖 操作手冊</button>
+  <button class="btn-ghost btn-sm" onclick="openSettings()">🔑 API 金鑰設定（選用）</button>
+</div>
+
+<div class="wrap">
+
+  <div class="panel">
+    <h2>1. 商品／服務基本資料</h2>
+    <div class="field-grid">
+      <div>
+        <label>產品／服務名稱</label>
+        <input type="text" id="productName" placeholder="例：智慧血壓手錶">
+      </div>
+      <div>
+        <label>產業類別（自由文字，用於判斷產業）</label>
+        <input type="text" id="category" placeholder="例：健康科技穿戴裝置">
+      </div>
+      <div>
+        <label>目標客群</label>
+        <input type="text" id="target" placeholder="例：40歲以上關注血壓的上班族與長輩">
+      </div>
+      <div>
+        <label>核心痛點／待解決問題</label>
+        <input type="text" id="pain" placeholder="例：量血壓要用傳統壓脈帶、不方便隨時量測">
+      </div>
+    </div>
+    <div class="examples" id="examples"></div>
+    <div class="actions">
+      <button class="btn-primary" onclick="generateAll()">✨ 產生九宮格草稿</button>
+      <button class="btn-ghost" onclick="aiGenerateAll()">🤖 請 AI 生成完整九宮格</button>
+      <button class="btn-ghost" onclick="clearCanvas()">清空</button>
+    </div>
+    <p class="hint">「產生九宮格草稿」是規則式引擎，不需要金鑰，同樣的輸入永遠得到同樣的草稿；每格右上角 🔄 可以單獨換一個版本。「請 AI 生成完整九宮格」需要在右上角填入 API 金鑰，會依你的實際描述重新生成更貼合的內容（會覆蓋目前九宮格內容，請先確認）。</p>
+  </div>
+
+  <div class="panel">
+    <div class="canvas-title">
+      <h2 style="border:none;padding:0;margin:0;">2. 商業模式九宮格</h2>
+      <span class="category-badge" id="categoryBadge"></span>
+    </div>
+    <div class="canvas" id="canvas"></div>
+    <div class="actions">
+      <button class="btn-ghost btn-sm" onclick="copyAll()">📋 複製全部文字</button>
+      <button class="btn-ghost btn-sm" onclick="downloadTxt()">⬇ 下載 .txt</button>
+      <button class="btn-ghost btn-sm" onclick="printCanvas()">🖨 列印 / 存成 PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="printArea"></div>
+
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h3 style="margin-top:0;">API 金鑰設定（選用，BYOK）</h3>
+    <p class="hint">不填也能用——規則式草稿完全免金鑰。填金鑰後可以用「請 AI 生成完整九宮格」取得更貼合你實際描述的內容。金鑰只存瀏覽器 localStorage。</p>
+    <label>服務商</label>
+    <select id="provider">
+      <option value="">不使用 AI</option>
+      <option value="anthropic">Claude (Anthropic)</option>
+      <option value="openai">OpenAI</option>
+      <option value="gemini">Google Gemini</option>
+      <option value="openrouter">OpenRouter</option>
+    </select>
+    <label>API 金鑰</label>
+    <input type="text" id="apiKey" placeholder="sk-...">
+    <label>模型名稱（選填）</label>
+    <input type="text" id="modelName" placeholder="例：claude-sonnet-5">
+    <div class="actions">
+      <button class="btn-primary" onclick="saveSettings()">儲存</button>
+      <button class="btn-ghost" onclick="closeSettings()">取消</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="warn-box">
+    <strong>使用警語</strong>
+    <ul>
+      <li>本工具產出的九宮格內容僅供商業模式發想參考，不構成任何投資或經營決策建議，請自行評估市場實況。</li>
+      <li>規則式草稿是套版文字（依產業分類挑選模板），AI 生成內容則可能有誤，兩者皆需自行查證與修改後才適合正式使用。</li>
+      <li>填有 API 金鑰時會直接連線到你選擇的服務商，該金鑰只存在你的瀏覽器，本工具不會經手或保存金鑰，也不會向你收取任何 API 費用。</li>
+      <li>請勿輸入真實機密商業資料；所有欄位只存在你瀏覽器的 localStorage，不會上傳到任何伺服器。</li>
+      <li>僅供教學、課程及個人使用，禁止未經授權公開發布、販售或商業化使用。</li>
+    </ul>
+  </div>
+  <div class="creator-box">製作：<strong>Mark Tsai（蔡豐全）</strong>｜<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a>｜完整經歷見<a href="manual.html">操作手冊</a></div>
+  <div class="footer-meta">
+    <span>© 2026 商業模式圖產生器</span>
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.business-model-canvas-generator" alt="訪客次數" style="vertical-align:middle;height:20px;">
+    <button type="button" id="installBtn" class="footer-link-btn">📲 加入主畫面</button>
+    <a href="manual.html">操作手冊 →</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="data.js"></script>
+<script>
+const D = window.BMC_DATA;
+const DRAFT_KEY = 'bmcDraft';
+
+let state = {
+  productName:'', category:'', target:'', pain:'',
+  categoryKey: 'general',
+  blocks: {}, // key -> text
+  regenSeed: {} // key -> counter for cycling variants
+};
+
+function hashString(s){
+  let h = 5381;
+  for(let i=0;i<s.length;i++){ h = ((h*33) ^ s.charCodeAt(i)) >>> 0; }
+  return h >>> 0;
+}
+function fillTpl(tpl, s){
+  return tpl.replace(/\{\{PRODUCT\}\}/g, s.productName||'本產品').replace(/\{\{TARGET\}\}/g, s.target||'目標客群').replace(/\{\{PAIN\}\}/g, s.pain||'核心痛點');
+}
+
+/* ---------------- 範例 ---------------- */
+function renderExamples(){
+  const box = document.getElementById('examples');
+  box.innerHTML = D.PRESETS.map((p,i)=>`<button class="btn-ghost btn-sm" onclick="loadExample(${i})">${p.label}</button>`).join('');
+}
+function loadExample(i){
+  const p = D.PRESETS[i];
+  document.getElementById('productName').value = p.productName;
+  document.getElementById('category').value = p.category;
+  document.getElementById('target').value = p.target;
+  document.getElementById('pain').value = p.pain;
+  generateAll();
+}
+renderExamples();
+
+/* ---------------- 畫布渲染 ---------------- */
+function buildCanvasSkeleton(){
+  const canvas = document.getElementById('canvas');
+  canvas.innerHTML = D.BLOCK_KEYS.map(key=>`
+    <div class="cell cell-${key} ${key==='value'?'value':''}" data-key="${key}">
+      <div class="cell-head">
+        <div class="cell-label">${D.BLOCK_LABELS[key]}</div>
+        <button class="cell-regen" title="換一個版本" onclick="regenBlock('${key}')">🔄</button>
+      </div>
+      <div class="cell-content" contenteditable="true" data-placeholder="點擊直接輸入…" data-key="${key}"></div>
+    </div>
+  `).join('');
+  D.BLOCK_KEYS.forEach(key=>{
+    canvas.querySelector(`.cell-content[data-key="${key}"]`).addEventListener('input', function(){
+      state.blocks[key] = this.textContent;
+      saveDraft();
+    });
+  });
+}
+buildCanvasSkeleton();
+
+function readInputs(){
+  state.productName = document.getElementById('productName').value.trim();
+  state.category = document.getElementById('category').value.trim();
+  state.target = document.getElementById('target').value.trim();
+  state.pain = document.getElementById('pain').value.trim();
+}
+
+function generateAll(){
+  readInputs();
+  if(!state.productName){ alert('請至少填寫產品／服務名稱'); return; }
+  const cat = D.classifyCategory(state.category, state.pain);
+  state.categoryKey = cat;
+  const tpl = D.BMC_TEMPLATES[cat];
+  D.BLOCK_KEYS.forEach(key=>{
+    const variants = tpl[key];
+    const seed = (state.regenSeed[key]||0);
+    const idx = hashString(state.productName+state.target+state.pain+key+seed) % variants.length;
+    state.blocks[key] = fillTpl(variants[idx], state);
+  });
+  renderBlocks();
+  document.getElementById('categoryBadge').textContent = '判斷產業：' + D.CATEGORY_LABELS[cat];
+  saveDraft();
+}
+
+function regenBlock(key){
+  readInputs();
+  if(!state.productName){ toast('請先填寫產品名稱並產生一次草稿'); return; }
+  state.regenSeed[key] = (state.regenSeed[key]||0) + 1;
+  const tpl = D.BMC_TEMPLATES[state.categoryKey];
+  const variants = tpl[key];
+  const idx = hashString(state.productName+state.target+state.pain+key+state.regenSeed[key]) % variants.length;
+  state.blocks[key] = fillTpl(variants[idx], state);
+  renderBlocks();
+  saveDraft();
+}
+
+function renderBlocks(){
+  D.BLOCK_KEYS.forEach(key=>{
+    const el = document.querySelector(`.cell-content[data-key="${key}"]`);
+    if(el) el.textContent = state.blocks[key] || '';
+  });
+}
+
+function clearCanvas(){
+  document.getElementById('productName').value = '';
+  document.getElementById('category').value = '';
+  document.getElementById('target').value = '';
+  document.getElementById('pain').value = '';
+  state = {productName:'',category:'',target:'',pain:'',categoryKey:'general',blocks:{},regenSeed:{}};
+  renderBlocks();
+  document.getElementById('categoryBadge').textContent = '';
+  saveDraft();
+}
+
+/* ---------------- localStorage ---------------- */
+function saveDraft(){
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadDraft(){
+  try{
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved) return;
+    state = Object.assign(state, saved);
+    document.getElementById('productName').value = state.productName||'';
+    document.getElementById('category').value = state.category||'';
+    document.getElementById('target').value = state.target||'';
+    document.getElementById('pain').value = state.pain||'';
+    renderBlocks();
+    if(state.categoryKey) document.getElementById('categoryBadge').textContent = '判斷產業：' + (D.CATEGORY_LABELS[state.categoryKey]||state.categoryKey);
+  }catch(e){}
+}
+loadDraft();
+
+/* ---------------- 匯出 ---------------- */
+function planText(){
+  let lines = [`商業模式圖：${state.productName||'（未命名）'}`, ''];
+  D.BLOCK_KEYS.forEach(key=>{
+    lines.push(`【${D.BLOCK_LABELS[key]}】`);
+    lines.push(state.blocks[key] || '（尚未填寫）');
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+function copyAll(){
+  navigator.clipboard.writeText(planText()).then(()=>toast('已複製到剪貼簿'));
+}
+function downloadTxt(){
+  const blob = new Blob([planText()], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '商業模式圖_' + (state.productName||'draft') + '.txt';
+  a.click();
+}
+function printCanvas(){
+  const root = document.getElementById('printArea');
+  root.innerHTML = `<h1 style="font-family:sans-serif;">商業模式圖：${escapeHtml(state.productName||'（未命名）')}</h1>
+    <div class="canvas">` + D.BLOCK_KEYS.map(key=>`
+      <div class="cell cell-${key}">
+        <div class="cell-label" style="margin-bottom:6px;">${D.BLOCK_LABELS[key]}</div>
+        <div style="font-size:13px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(state.blocks[key]||'（尚未填寫）')}</div>
+      </div>`).join('') + `</div>`;
+  window.print();
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------------- toast ---------------- */
+let toastTimer=null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ---------------- 設定 / BYOK ---------------- */
+function openSettings(){
+  const s = JSON.parse(localStorage.getItem('bmcSettings')||'{}');
+  document.getElementById('provider').value = s.provider||'';
+  document.getElementById('apiKey').value = s.apiKey||'';
+  document.getElementById('modelName').value = s.model||'';
+  document.getElementById('settingsModal').style.display='flex';
+}
+function closeSettings(){ document.getElementById('settingsModal').style.display='none'; }
+function saveSettings(){
+  const s = {
+    provider: document.getElementById('provider').value,
+    apiKey: document.getElementById('apiKey').value.trim(),
+    model: document.getElementById('modelName').value.trim()
+  };
+  localStorage.setItem('bmcSettings', JSON.stringify(s));
+  closeSettings();
+}
+
+/* ---------------- AI 生成完整九宮格 ---------------- */
+async function aiGenerateAll(){
+  readInputs();
+  if(!state.productName){ alert('請至少填寫產品／服務名稱'); return; }
+  const settings = JSON.parse(localStorage.getItem('bmcSettings')||'{}');
+  if(!settings.provider || !settings.apiKey){ alert('請先在右上角「API 金鑰設定」填入金鑰才能使用此功能；沒有金鑰請改用「產生九宮格草稿」'); return; }
+  if(Object.keys(state.blocks).length && !confirm('這會覆蓋目前九宮格已有的內容，確定要繼續嗎？')) return;
+
+  // 先用規則式引擎墊底，AI 個別欄位驗證失敗時逐一退回規則式結果
+  const cat = D.classifyCategory(state.category, state.pain);
+  state.categoryKey = cat;
+  const tpl = D.BMC_TEMPLATES[cat];
+  const ruleBlocks = {};
+  D.BLOCK_KEYS.forEach(key=>{
+    const variants = tpl[key];
+    const idx = hashString(state.productName+state.target+state.pain+key) % variants.length;
+    ruleBlocks[key] = fillTpl(variants[idx], state);
+  });
+
+  toast('AI 生成中，請稍候…');
+
+  const fieldList = D.BLOCK_KEYS.map(k=>`"${k}"`).join(', ');
+  const systemPrompt = `你是一位熟悉商業模式圖（Business Model Canvas）理論的產品策略顧問。請依使用者提供的產品資訊，填寫九宮格商業模式圖的九個欄位：關鍵合作夥伴(partners)、關鍵活動(activities)、關鍵資源(resources)、價值主張(value)、顧客關係(relationships)、通路(channels)、客戶群體(segments)、成本結構(cost)、收益流(revenue)。
+每個欄位輸出1-2句繁體中文說明，具體、貼合使用者描述的產業與情境，避免空泛套話。
+請只回傳 JSON 物件，格式為 {${fieldList}}，每個值都是字串，不要加任何其他文字或 markdown 符號。`;
+  const userPrompt = `產品/服務名稱：${state.productName}\n產業類別：${state.category||'（未提供，請自行判斷）'}\n目標客群：${state.target||'（未提供）'}\n核心痛點/待解決問題：${state.pain||'（未提供）'}`;
+
+  try{
+    const text = await providerCall(settings, systemPrompt, userPrompt);
+    let cleaned = text.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+    const parsed = JSON.parse(cleaned);
+    let missing = [];
+    D.BLOCK_KEYS.forEach(key=>{
+      if(parsed[key] && typeof parsed[key]==='string' && parsed[key].trim()){
+        state.blocks[key] = parsed[key].trim();
+      }else{
+        state.blocks[key] = ruleBlocks[key];
+        missing.push(D.BLOCK_LABELS[key]);
+      }
+    });
+    renderBlocks();
+    document.getElementById('categoryBadge').textContent = '判斷產業：' + D.CATEGORY_LABELS[cat];
+    saveDraft();
+    toast(missing.length ? `AI 生成完成，但「${missing.join('、')}」欄位無效已改用規則式草稿` : 'AI 生成完成');
+  }catch(err){
+    D.BLOCK_KEYS.forEach(key=>{ state.blocks[key] = ruleBlocks[key]; });
+    renderBlocks();
+    document.getElementById('categoryBadge').textContent = '判斷產業：' + D.CATEGORY_LABELS[cat];
+    saveDraft();
+    toast('AI 生成失敗（' + err.message + '），已改用規則式草稿');
+  }
+}
+
+async function providerCall(settings, systemPrompt, userPrompt){
+  const {provider, apiKey, model} = settings;
+  if(provider === 'anthropic'){
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model: model || 'claude-sonnet-5', max_tokens: 1200, system: systemPrompt, messages:[{role:'user', content:userPrompt}]})
+    });
+    if(!res.ok) throw new Error('Anthropic API 錯誤 '+res.status);
+    const data = await res.json();
+    return data.content[0].text;
+  }
+  if(provider === 'openai'){
+    const res = await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({model: model || 'gpt-4o-mini', messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}]})
+    });
+    if(!res.ok) throw new Error('OpenAI API 錯誤 '+res.status);
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+  if(provider === 'gemini'){
+    const m = model || 'gemini-2.5-flash';
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({contents:[{role:'user', parts:[{text: systemPrompt+'\n\n'+userPrompt}]}]})
+    });
+    if(!res.ok) throw new Error('Gemini API 錯誤 '+res.status);
+    const data = await res.json();
+    return data.candidates[0].content.parts[0].text;
+  }
+  if(provider === 'openrouter'){
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({model: model || 'anthropic/claude-sonnet-5', messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}]})
+    });
+    if(!res.ok) throw new Error('OpenRouter API 錯誤 '+res.status);
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+  throw new Error('未知的服務商');
+}
+
+/* ================= 頂部跑馬燈 ================= */
+(function () {
+  'use strict';
+  var MARQUEE_CHECK_URL = "https://script.google.com/macros/s/AKfycbwKX0DNNbY8y4nf90BFTHtxgfqJcHHcZasRrgycl4QAe52_hkjMWSkYk4xOsqU-JPCROw/exec";
+  var STORAGE_KEY = 'bmcMarquee';
+  var REFRESH_MS = 20 * 60 * 1000;
+  var bar = document.getElementById('marqueeBar');
+  var track = document.getElementById('marqueeTrack');
+  var lastKey = null;
+  function loadCache() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; } }
+  function saveCache(items) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {} }
+  function appendParsedText(container, text) {
+    var re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var lastIndex = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > lastIndex) container.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      var a = document.createElement('a');
+      a.href = m[2]; a.textContent = m[1]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.style.color = 'inherit'; a.style.textDecoration = 'underline';
+      container.appendChild(a);
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < text.length) container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  function buildTrackContent(items) {
+    var frag = document.createDocumentFragment();
+    function appendPass() {
+      items.forEach(function (item, idx) {
+        if (idx > 0) frag.appendChild(document.createTextNode('　★　'));
+        appendParsedText(frag, item);
+      });
+    }
+    appendPass();
+    frag.appendChild(document.createTextNode('　★　'));
+    appendPass();
+    return frag;
+  }
+  function render(items) {
+    if (!items || !items.length) return;
+    var key = JSON.stringify(items);
+    if (key === lastKey) return;
+    lastKey = key;
+    track.innerHTML = '';
+    track.appendChild(buildTrackContent(items));
+    bar.classList.add('show');
+    document.body.classList.add('has-marquee');
+    var width = track.scrollWidth / 2;
+    track.style.animationDuration = Math.max(width / 80, 10) + 's';
+  }
+  function fetchMarquee() {
+    fetch(MARQUEE_CHECK_URL, { method: 'POST', body: JSON.stringify({ serial: '' }) })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { if (data && Array.isArray(data.marquee) && data.marquee.length) { saveCache(data.marquee); render(data.marquee); } })
+      .catch(function () {});
+  }
+  render(loadCache());
+  fetchMarquee();
+  setInterval(fetchMarquee, REFRESH_MS);
+})();
+
+/* ================= PWA 加入主畫面 ================= */
+(function () {
+  'use strict';
+  var deferredPrompt = null;
+  var btn = document.getElementById('installBtn');
+  var ua = navigator.userAgent || '';
+  var isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isMacDesktop = /Macintosh/.test(ua) && !isIOSDevice;
+  var isSafariEngine = /^((?!chrome|crios|fxios|edgios|android).)*safari/i.test(ua);
+  var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  function fallbackMessage() {
+    if (isIOSDevice) return '請點畫面上的「分享」圖示，選「加入主畫面」';
+    if (isMacDesktop && isSafariEngine) return '請用選單列「檔案」→「加入 Dock」（Safari 17 以上）';
+    return '目前瀏覽器不支援安裝，或已安裝過';
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; });
+  window.addEventListener('appinstalled', function () { deferredPrompt = null; });
+  if (btn) {
+    if (isStandalone) { btn.style.display = 'none'; }
+    else {
+      btn.addEventListener('click', function () {
+        if (!deferredPrompt) { toast(fallbackMessage()); return; }
+        try { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; }); }
+        catch (e) { toast(fallbackMessage()); }
+      });
+    }
+  }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('service-worker.js').catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
