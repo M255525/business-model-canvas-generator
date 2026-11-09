@@ -228,6 +228,9 @@ footer{max-width:900px;margin:0 auto;padding:20px 20px 60px;display:flex;flex-di
 
 <script src="data.js"></script>
 <script>
+/* Gemini 已下架／不存在的模型 ID 自動換成現役模型（2026-11 體檢）：新申請的 AI Studio 金鑰呼叫 2.5／2.0 系列會被拒；也順便去掉多打的空白與 models/ 前綴 */
+function geminiModelFix(m){var r={'gemini-2.5-flash': 'gemini-3.6-flash', 'gemini-2.5-flash-lite': 'gemini-3.5-flash-lite', 'gemini-2.5-pro': 'gemini-3.8-flash', 'gemini-2.0-flash': 'gemini-3.6-flash', 'gemini-2.0-flash-001': 'gemini-3.6-flash', 'gemini-2.0-flash-lite': 'gemini-3.1-flash-lite', 'gemini-1.5-flash': 'gemini-3.6-flash', 'gemini-1.5-pro': 'gemini-3.1-pro-preview', 'gemini-3-pro': 'gemini-3.1-pro-preview', 'gemini-3-pro-preview': 'gemini-3.1-pro-preview', 'gemini-3.5-pro': 'gemini-3.1-pro-preview', 'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite'};m=String(m||'').trim().replace(/^models\//,'');return r[m]||m;}
+
 const D = window.BMC_DATA;
 const DRAFT_KEY = 'bmcDraft';
 
@@ -495,14 +498,20 @@ async function providerCall(settings, systemPrompt, userPrompt){
     return data.choices[0].message.content;
   }
   if(provider === 'gemini'){
-    const m = model || 'gemini-2.5-flash';
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`,{
+    const m = geminiModelFix(model || 'gemini-3.6-flash');
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModelFix(m))}:generateContent?key=${apiKey}`,{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({contents:[{role:'user', parts:[{text: systemPrompt+'\n\n'+userPrompt}]}]})
     });
-    if(!res.ok) throw new Error('Gemini API 錯誤 '+res.status);
+    if(!res.ok){
+      let msg = '';
+      try{ const e = await res.json(); msg = (e.error && e.error.message) || ''; }catch(_){}
+      throw new Error('Gemini API 錯誤 '+res.status+(msg ? '：'+msg : ''));
+    }
     const data = await res.json();
-    return data.candidates[0].content.parts[0].text;
+    const text = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || []).map(p => p.text || '').join('');
+    if(!text) throw new Error('Gemini 沒有回傳文字內容' + (data.candidates && data.candidates[0] && data.candidates[0].finishReason ? '（'+data.candidates[0].finishReason+'）' : ''));
+    return text;
   }
   if(provider === 'openrouter'){
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
