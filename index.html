@@ -212,7 +212,8 @@ footer{max-width:900px;margin:0 auto;padding:20px 20px 60px;display:flex;flex-di
       <li>規則式草稿是套版文字（依產業分類挑選模板），AI 生成內容則可能有誤，兩者皆需自行查證與修改後才適合正式使用。</li>
       <li>填有 API 金鑰時會直接連線到你選擇的服務商，該金鑰只存在你的瀏覽器，本工具不會經手或保存金鑰，也不會向你收取任何 API 費用。</li>
       <li>請勿輸入真實機密商業資料；所有欄位只存在你瀏覽器的 localStorage，不會上傳到任何伺服器。</li>
-      <li>僅供教學、課程及個人使用，禁止未經授權公開發布、販售或商業化使用。</li>
+      <li>九宮格架構來自 Strategyzer AG 的 The Business Model Canvas（strategyzer.com，CC BY-SA 3.0），本工具為改作的繁體中文版，與 Strategyzer 沒有合作或贊助關係。</li>
+      <li>除九宮格架構依上述授權外，本工具其餘內容僅供教學、課程及個人使用，禁止未經授權公開發布、販售或商業化使用。</li>
     </ul>
   </div>
   <div class="creator-box">製作：<strong>Mark Tsai（蔡豐全）</strong>｜<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a>｜完整經歷見<a href="manual.html">操作手冊</a></div>
@@ -388,7 +389,8 @@ function printCanvas(){
       <div class="cell cell-${key}">
         <div class="cell-label" style="margin-bottom:6px;">${D.BLOCK_LABELS[key]}</div>
         <div style="font-size:13px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(state.blocks[key]||'（尚未填寫）')}</div>
-      </div>`).join('') + `</div>`;
+      </div>`).join('') + `</div>
+    <p style="font-size:10px;color:#666;margin-top:10px;">九宮格架構：The Business Model Canvas, Strategyzer AG（strategyzer.com），CC BY-SA 3.0；本頁為改作的繁體中文版。</p>`;
   window.print();
 }
 function escapeHtml(s){
